@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:splitMotionEvents="false"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/corner"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:text="🏇"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textAlignment="center"
+        />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/top_header_list"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#eee"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/side_header_list"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/vh_header_item" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/side_header_list"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/top_header_list"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/vh_content_item"
+        android:background="#eee"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/main_content_list"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            tools:listitem="@layout/vh_content_item"
+            android:background="#fff"
+            app:layout_constraintTop_toBottomOf="@id/top_header_list"
+            app:layout_constraintStart_toEndOf="@id/side_header_list"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
