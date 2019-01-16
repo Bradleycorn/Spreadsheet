@@ -1,10 +1,13 @@
 package net.bradball.spreadsheet
 
+import android.hardware.SensorManager.getOrientation
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.vh_header_item.view.*
+import net.bradball.spreadsheet2.SpreadsheetActivity
 
 
 class MainActivity : AppCompatActivity() {
@@ -105,8 +109,6 @@ class MainActivity : AppCompatActivity() {
             main_content_list.fling(velocityX, 0)
             return false
         }
-
-
     }
 
     val sideHeaderFlingListener = object: RecyclerView.OnFlingListener() {
@@ -122,11 +124,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        title = "Custom LayoutManager"
 
         val headerItems = data.keys.toList()
         val contentItems = data.values.toList()
 
         top_header_list.adapter = HeaderAdapter(headerItems)
+        top_header_list.layoutManager = MyLinearLayoutManager(this, RecyclerView.HORIZONTAL)
+
         side_header_list.adapter = HeaderAdapter(headerItems)
 
         val mgr = FixedGridLayoutManager()
@@ -189,45 +194,43 @@ class MainActivity : AppCompatActivity() {
             }
 
             Log.d(TAG, "onInterceptTouchEvent: $list")
-            return when (rv.scrollState) {
-                RecyclerView.SCROLL_STATE_IDLE -> {
+            if (rv.scrollState == RecyclerView.SCROLL_STATE_IDLE) {
                     onTouchEvent(rv, e)
-                    false
-                }
-                RecyclerView.SCROLL_STATE_SETTLING -> true
-                else -> false
             }
+
+            if (!areOthersIdle(rv)) {
+                return true
+            } else {
+                return false
+            }
+
         }
 
         override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
             val orientation = getOrientation(rv)
             val action = e.action
             Log.d(TAG, "onTouchEvent: $orientation")
-            if (action == MotionEvent.ACTION_DOWN) {
-                Log.d(TAG, "Action Down")
-                if (areOthersIdle(rv)) {
-                    when (orientation) {
-                        RecyclerView.VERTICAL -> lastY = rv.scrollY
-                        RecyclerView.HORIZONTAL -> lastX = rv.scrollX
-                        else -> {
-                            lastY = rv.scrollY
-                            lastX = rv.scrollX
-                        }
-                    }
 
-                    when (rv) {
-                        side_header_list -> {
-                            rv.addOnScrollListener(sideHeaderScrollListener)
-                            rv.onFlingListener = sideHeaderFlingListener
-                        }
-                        top_header_list -> {
-                            rv.addOnScrollListener(topHeaderScrollListener)
-                            rv.onFlingListener = topHeaderFlingListener
-                        }
-                        main_content_list -> {
-                            rv.addOnScrollListener(mainContentScrollListener)
-                            rv.onFlingListener = mainContentFlingListener
-                        }
+            if (action == MotionEvent.ACTION_DOWN && areOthersIdle(rv)) {
+                Log.d(TAG, "Action Down")
+                when (orientation) {
+                    RecyclerView.VERTICAL -> lastY = rv.scrollY
+                    RecyclerView.HORIZONTAL -> lastX = rv.scrollX
+                    else -> {
+                        lastY = rv.scrollY
+                        lastX = rv.scrollX
+                    }
+                }
+
+                when (rv) {
+                    side_header_list -> {
+                        rv.addOnScrollListener(sideHeaderScrollListener)
+                    }
+                    top_header_list -> {
+                        rv.addOnScrollListener(topHeaderScrollListener)
+                    }
+                    main_content_list -> {
+                        rv.addOnScrollListener(mainContentScrollListener)
                     }
                 }
             } else if (action == MotionEvent.ACTION_UP && positionSettled(rv)) {
@@ -235,20 +238,32 @@ class MainActivity : AppCompatActivity() {
                 when (rv) {
                     side_header_list -> {
                         rv.removeOnScrollListener(sideHeaderScrollListener)
-                        rv.onFlingListener = null
                     }
                     top_header_list -> {
                         rv.removeOnScrollListener(topHeaderScrollListener)
-                        rv.onFlingListener = null
                     }
                     main_content_list -> {
                         rv.removeOnScrollListener(mainContentScrollListener)
-                        rv.onFlingListener = null
                     }
                 }
             }
         }
+    }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.options_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+
+        return when (item?.itemId) {
+            R.id.switch_activity -> {
+                startActivity(SpreadsheetActivity.createIntent(this))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }
 

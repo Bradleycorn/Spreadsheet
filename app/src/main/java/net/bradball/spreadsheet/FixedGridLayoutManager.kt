@@ -8,11 +8,30 @@ import android.util.SparseArray
 import android.util.SparseIntArray
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 
 import java.util.HashSet
 
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
+
+
+class MyLinearLayoutManager(context: Context, orientation: Int) : LinearLayoutManager(context, orientation, false) {
+    private val TAG = "Delta"
+
+    override fun scrollVerticallyBy(dy: Int, recycler: RecyclerView.Recycler?, state: RecyclerView.State?): Int {
+        val delta = super.scrollVerticallyBy(dy, recycler, state)
+        Log.d(TAG, "Linear: Vertical Delta: $delta")
+        return delta
+    }
+
+    override fun scrollHorizontallyBy(dx: Int, recycler: RecyclerView.Recycler?, state: RecyclerView.State?): Int {
+        val delta = super.scrollHorizontallyBy(dx, recycler, state)
+        Log.d(TAG, "Linear: Horizontal Delta - asked for: $dx, got: $delta")
+        return delta
+    }
+}
+
 
 /**
  * A [androidx.recyclerview.widget.RecyclerView.LayoutManager] implementation
@@ -32,7 +51,8 @@ import androidx.recyclerview.widget.RecyclerView
  *  * The window of visible views is a constant
  *
  */
-class FixedGridLayoutManager : RecyclerView.LayoutManager() {
+class FixedGridLayoutManager : RecyclerView.LayoutManager(), RecyclerView.SmoothScroller.ScrollVectorProvider {
+    private val TAG = "Delta"
 
     /* First (top-left) position visible at any point */
     private var mFirstVisiblePosition: Int = 0
@@ -525,21 +545,25 @@ class FixedGridLayoutManager : RecyclerView.LayoutManager() {
          * of the parent depending on whether the direction of travel was positive
          * or negative.
          */
-        val scroller = object : LinearSmoothScroller(recyclerView!!.context) {
-            /*
-             * LinearSmoothScroller, at a minimum, just need to know the vector
-             * (x/y distance) to travel in order to get from the current positioning
-             * to the target.
-             */
-            override fun computeScrollVectorForPosition(targetPosition: Int): PointF {
-                val rowOffset = getGlobalRowOfPosition(targetPosition) - getGlobalRowOfPosition(mFirstVisiblePosition)
-                val columnOffset = getGlobalColumnOfPosition(targetPosition) - getGlobalColumnOfPosition(mFirstVisiblePosition)
-
-                return PointF((columnOffset * mDecoratedChildWidth).toFloat(), (rowOffset * mDecoratedChildHeight).toFloat())
-            }
-        }
+        val scroller = LinearSmoothScroller(recyclerView!!.context)
         scroller.targetPosition = position
         startSmoothScroll(scroller)
+    }
+
+    override fun computeScrollVectorForPosition(targetPosition: Int): PointF? {
+        if (childCount == 0) {
+            return null
+        }
+        val firstChildRow = getGlobalRowOfPosition(0)
+        val firstChildColumn = getGlobalColumnOfPosition(0)
+
+        val targetRow = getGlobalRowOfPosition(targetPosition)
+        val targetColumn = getGlobalColumnOfPosition(targetPosition)
+
+        val directionX = if (targetColumn < firstChildColumn) -1F else 1F
+        val directionY = if (targetRow < firstChildRow) -1F else 1F
+
+        return PointF(directionX, directionY)
     }
 
     /*
@@ -557,9 +581,13 @@ class FixedGridLayoutManager : RecyclerView.LayoutManager() {
      * event somehow requires that new views be added or old views get recycled.
      */
     override fun scrollHorizontallyBy(dx: Int, recycler: RecyclerView.Recycler?, state: RecyclerView.State?): Int {
-        if (childCount == 0) {
+        if (childCount == 0 || dx == 0) {
             return 0
         }
+
+
+        val direction = if (dx > 0) 1 else -1
+        val absDx = Math.abs(dx)
 
         //Take leftmost measurements from the top-left child
         val topView = getChildAt(0)
@@ -618,6 +646,7 @@ class FixedGridLayoutManager : RecyclerView.LayoutManager() {
          * match original delta (passed in), RecyclerView will draw
          * an edge effect.
          */
+        Log.d(TAG, "Grid: Horizontal Delta - asked for: $dx, got: $delta")
         return -delta
     }
 
@@ -711,6 +740,7 @@ class FixedGridLayoutManager : RecyclerView.LayoutManager() {
          * match original delta (passed in), RecyclerView will draw
          * an edge effect.
          */
+        //Log.d(TAG, "Grid: Vertical Delta: ${-delta}")
         return -delta
     }
 

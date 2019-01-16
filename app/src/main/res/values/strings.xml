@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Spreadsheet</string>
+    <string name="option_switch_activity">Switch Activity</string>
 </resources>

@@ -23,8 +23,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="#eee"
-        android:orientation="horizontal"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/side_header_list"
         app:layout_constraintTop_toTopOf="parent"
