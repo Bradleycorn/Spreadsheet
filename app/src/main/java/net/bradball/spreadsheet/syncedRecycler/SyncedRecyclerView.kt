@@ -1,4 +1,4 @@
-package net.bradball.spreadsheet2.syncedRecycler
+package net.bradball.spreadsheet.syncedRecycler
 
 import android.content.Context
 import android.util.AttributeSet

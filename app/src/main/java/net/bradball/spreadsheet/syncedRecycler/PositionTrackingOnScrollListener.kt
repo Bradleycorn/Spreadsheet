@@ -1,5 +1,6 @@
-package net.bradball.spreadsheet2.syncedRecycler
+package net.bradball.spreadsheet.syncedRecycler
 
+import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 
 

@@ -1,10 +1,8 @@
-package net.bradball.spreadsheet2.syncedRecycler
+package net.bradball.spreadsheet.syncedRecycler
 
-import android.nfc.Tag
 import android.util.Log
 import android.view.MotionEvent
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.activity_spreadsheet.view.*
 import net.bradball.spreadsheet.R
 
 
@@ -43,22 +41,26 @@ class SyncedRecyclerViewTouchListener : RecyclerView.OnItemTouchListener {
         val action: Int = e.action
         val thisScrollListener = from.scrollListener
 
-        if (action == MotionEvent.ACTION_DOWN && to.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
+        if (action == MotionEvent.ACTION_DOWN && to.scrollState == RecyclerView.SCROLL_STATE_IDLE) {
             lastX = thisScrollListener.scrolledX
             lastY = thisScrollListener.scrolledY
-            from.clearOnScrollListeners()
             from.addOnScrollListener(BoundScrollListener(to, orientation))
         } else {
             val scrolledX = thisScrollListener.scrolledX
             val scrolledY = thisScrollListener.scrolledY
-            if (action == MotionEvent.ACTION_UP && from.id == R.id.main_content) {
-                Log.d(TAG, "orientation: $orientation, lastY: $lastY, scrolledY: $scrolledY")
-            }
             if (action == MotionEvent.ACTION_UP &&
                     (orientation == SyncedRecyclerView.ALIGN_ORIENTATION_VERTICAL && lastY == scrolledY ||
                      orientation == SyncedRecyclerView.ALIGN_ORIENTATION_HORIZONTAL && lastX == scrolledX ||
                      lastY == scrolledY && lastX == scrolledX)) {
                 from.clearOnScrollListeners()
+            }
+        }
+    }
+
+    fun flingBoundViews(rv: SyncedRecyclerView, x: Int, y: Int) {
+        for (binding in bindings) {
+            if (binding.from == rv) {
+                binding.to.fling(x, y)
             }
         }
     }

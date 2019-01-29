@@ -1,4 +1,4 @@
-package net.bradball.spreadsheet2.syncedRecycler
+package net.bradball.spreadsheet.syncedRecycler
 
 
 internal class SyncedRecyclerViewBinding(val from: SyncedRecyclerView, val to: SyncedRecyclerView, val orientation: Int) {
